@@ -1,17 +1,4 @@
-"""Generate nine comparison plots.
 
-For each shared operation:
-
-    1. Fibonacci Heap only
-    2. Binary Heap only
-    3. Fibonacci Heap vs Binary Heap
-
-Operations:
-
-    Insert
-    Find-Min
-    Extract-Min
-"""
 
 from __future__ import annotations
 

@@ -1,39 +1,5 @@
 # Fibonacci Heap Project
 
-A complete, educational Python implementation of a Fibonacci Heap with:
-
-- Core Fibonacci Heap operations
-- Circular doubly linked lists
-- Consolidation after `extractMin`
-- `decreaseKey` with cuts and cascading cuts
-- Node handles for `decreaseKey` and `delete`
-- Unit tests and randomized correctness tests
-- Runtime benchmarking
-- Experimental runtime plots
-
-All project identifiers use camelCase.
-
-## Project structure
-
-```text
-fibonacciHeapProject/
-├── fibonacciHeap/
-│   ├── __init__.py
-│   └── fibonacciHeap.py
-├── tests/
-│   ├── testBasic.py
-│   ├── testDecreaseKey.py
-│   ├── testDelete.py
-│   └── testRandomized.py
-├── benchmarks/
-│   └── benchmarkHeap.py
-├── plots/
-│   └── generatePlots.py
-├── demo.py
-├── requirements.txt
-└── FIBONACCI_HEAP_GUIDE.md
-```
-
 ## Quick start
 
 From the project root:

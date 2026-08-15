@@ -1,14 +1,3 @@
-"""Benchmark Fibonacci Heap against Python's binary heap.
-
-The comparison uses only operations available in both structures:
-
-    1. Insert
-    2. Find-Min
-    3. Extract-Min
-
-Python's heapq module implements a binary min-heap.
-"""
-
 from __future__ import annotations
 
 import heapq

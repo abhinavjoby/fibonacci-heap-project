@@ -1,4 +1,3 @@
-"""Run Fibonacci Heap benchmarks and save results as CSV."""
 from __future__ import annotations
 import csv
 import random

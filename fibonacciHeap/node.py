@@ -1,5 +1,3 @@
-"""Node implementation for the Fibonacci Heap."""
-
 from __future__ import annotations
 from typing import Generic, Optional, TypeVar
 

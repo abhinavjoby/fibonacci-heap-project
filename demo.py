@@ -1,4 +1,3 @@
-"""Simple Fibonacci Heap demonstration."""
 from fibonacciHeap import FibonacciHeap
 
 
