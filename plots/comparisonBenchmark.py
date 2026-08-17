@@ -1,30 +1,192 @@
+"""Benchmark Fibonacci Heap against our own Binary Heap.
+
+Both data structures are implemented in Python, so the comparison
+focuses on the data structures rather than comparing our code against
+Python's optimized heapq implementation.
+
+Shared operations benchmarked:
+
+    1. Insert
+    2. Find-Min
+    3. Extract-Min
+"""
+
 from __future__ import annotations
 
-import heapq
 import statistics
 import sys
 import time
 from pathlib import Path
 
 
-# ------------------------------------------------------------
+# ============================================================
 # Project root
-# ------------------------------------------------------------
+# ============================================================
 
 PROJECT_ROOT = Path(
     __file__
 ).resolve().parents[1]
 
 if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+    sys.path.insert(
+        0,
+        str(PROJECT_ROOT),
+    )
 
 
 from fibonacciHeap import FibonacciHeap
 
 
-# ------------------------------------------------------------
-# Benchmark settings
-# ------------------------------------------------------------
+# ============================================================
+# Binary Heap implementation
+# ============================================================
+
+class BinaryHeap:
+    """A standard array-based binary min-heap.
+
+    The heap is stored in a Python list.
+
+    For an element at index i:
+
+        parent = (i - 1) // 2
+        leftChild = 2 * i + 1
+        rightChild = 2 * i + 2
+    """
+
+    def __init__(self) -> None:
+        """Create an empty Binary Heap."""
+        self.heap = []
+
+    def insert(self, key: int) -> None:
+        """Insert a key.
+
+        Complexity: O(log n)
+        """
+        self.heap.append(key)
+
+        self._siftUp(
+            len(self.heap) - 1
+        )
+
+    def findMin(self) -> int | None:
+        """Return the minimum key without removing it.
+
+        Complexity: O(1)
+        """
+        if not self.heap:
+            return None
+
+        return self.heap[0]
+
+    def extractMin(self) -> int | None:
+        """Remove and return the minimum key.
+
+        Complexity: O(log n)
+        """
+        if not self.heap:
+            return None
+
+        if len(self.heap) == 1:
+            return self.heap.pop()
+
+        minimumValue = self.heap[0]
+
+        # Move the final element to the root.
+        self.heap[0] = self.heap.pop()
+
+        # Restore the heap-order property.
+        self._siftDown(0)
+
+        return minimumValue
+
+    def isEmpty(self) -> bool:
+        """Return whether the heap is empty."""
+        return len(self.heap) == 0
+
+    def getSize(self) -> int:
+        """Return the number of elements."""
+        return len(self.heap)
+
+    def _siftUp(
+        self,
+        index: int,
+    ) -> None:
+        """Move a node upward until heap order is restored."""
+        while index > 0:
+
+            parentIndex = (
+                index - 1
+            ) // 2
+
+            if (
+                self.heap[index]
+                >= self.heap[parentIndex]
+            ):
+                break
+
+            (
+                self.heap[index],
+                self.heap[parentIndex],
+            ) = (
+                self.heap[parentIndex],
+                self.heap[index],
+            )
+
+            index = parentIndex
+
+    def _siftDown(
+        self,
+        index: int,
+    ) -> None:
+        """Move a node downward until heap order is restored."""
+        heapSize = len(self.heap)
+
+        while True:
+
+            leftIndex = (
+                2 * index + 1
+            )
+
+            rightIndex = (
+                2 * index + 2
+            )
+
+            smallestIndex = index
+
+            # Check left child.
+            if (
+                leftIndex < heapSize
+                and self.heap[leftIndex]
+                < self.heap[smallestIndex]
+            ):
+                smallestIndex = leftIndex
+
+            # Check right child.
+            if (
+                rightIndex < heapSize
+                and self.heap[rightIndex]
+                < self.heap[smallestIndex]
+            ):
+                smallestIndex = rightIndex
+
+            # Heap order is already correct.
+            if smallestIndex == index:
+                break
+
+            (
+                self.heap[index],
+                self.heap[smallestIndex],
+            ) = (
+                self.heap[smallestIndex],
+                self.heap[index],
+            )
+
+            index = smallestIndex
+
+
+# ============================================================
+# Benchmark configuration
+# ============================================================
 
 INPUT_SIZES = [
     1_000,
@@ -35,19 +197,25 @@ INPUT_SIZES = [
 
 NUMBER_OF_TRIALS = 5
 
+# Find-Min itself is O(1), so one call can be too fast to measure
+# reliably. We perform the same fixed number of calls for both
+# implementations.
+FIND_MIN_REPETITIONS = 100_000
+
 
 # ============================================================
-# Helper
+# Timing helper
 # ============================================================
 
 def measureRuntime(
     benchmarkFunction,
 ) -> float:
-    """Run a benchmark several times and return the median runtime."""
-
+    """Run a benchmark repeatedly and return median runtime."""
     runtimes = []
 
-    for _ in range(NUMBER_OF_TRIALS):
+    for _ in range(
+        NUMBER_OF_TRIALS
+    ):
         startTime = time.perf_counter()
 
         benchmarkFunction()
@@ -58,44 +226,44 @@ def measureRuntime(
             endTime - startTime
         )
 
-    return statistics.median(runtimes)
+    return statistics.median(
+        runtimes
+    )
 
 
 # ============================================================
-# Fibonacci Heap
+# Fibonacci Heap benchmarks
 # ============================================================
 
-def fibonacciInsert(
+def benchmarkFibonacciInsert(
     inputSize: int,
 ) -> None:
-    """Insert inputSize elements into a Fibonacci Heap."""
-
+    """Benchmark Fibonacci Heap insertion."""
     heap = FibonacciHeap()
 
     for value in range(inputSize):
         heap.insert(value)
 
 
-def fibonacciFindMin(
+def benchmarkFibonacciFindMin(
     inputSize: int,
 ) -> None:
-    """Perform findMin on a populated Fibonacci Heap."""
-
+    """Benchmark repeated Fibonacci Heap findMin calls."""
     heap = FibonacciHeap()
 
     for value in range(inputSize):
         heap.insert(value)
 
-    # Perform the operation repeatedly so the timing is measurable.
-    for _ in range(inputSize):
+    for _ in range(
+        FIND_MIN_REPETITIONS
+    ):
         heap.findMin()
 
 
-def fibonacciExtractMin(
+def benchmarkFibonacciExtractMin(
     inputSize: int,
 ) -> None:
-    """Extract all elements from a Fibonacci Heap."""
-
+    """Benchmark extracting every element."""
     heap = FibonacciHeap()
 
     for value in range(inputSize):
@@ -106,60 +274,53 @@ def fibonacciExtractMin(
 
 
 # ============================================================
-# Python Binary Heap
+# Binary Heap benchmarks
 # ============================================================
 
-def binaryInsert(
+def benchmarkBinaryInsert(
     inputSize: int,
 ) -> None:
-    """Insert inputSize elements using Python's heapq."""
-
-    heap = []
+    """Benchmark Binary Heap insertion."""
+    heap = BinaryHeap()
 
     for value in range(inputSize):
-        heapq.heappush(
-            heap,
-            value,
-        )
+        heap.insert(value)
 
 
-def binaryFindMin(
+def benchmarkBinaryFindMin(
     inputSize: int,
 ) -> None:
-    """Perform find-min using heapq[0]."""
+    """Benchmark repeated Binary Heap findMin calls."""
+    heap = BinaryHeap()
 
-    heap = list(
-        range(inputSize)
-    )
+    for value in range(inputSize):
+        heap.insert(value)
 
-    heapq.heapify(heap)
-
-    for _ in range(inputSize):
-        # heap[0] is the minimum element.
-        _ = heap[0]
+    for _ in range(
+        FIND_MIN_REPETITIONS
+    ):
+        heap.findMin()
 
 
-def binaryExtractMin(
+def benchmarkBinaryExtractMin(
     inputSize: int,
 ) -> None:
-    """Extract all elements using heapq.heappop."""
+    """Benchmark extracting every element."""
+    heap = BinaryHeap()
 
-    heap = list(
-        range(inputSize)
-    )
+    for value in range(inputSize):
+        heap.insert(value)
 
-    heapq.heapify(heap)
-
-    while heap:
-        heapq.heappop(heap)
+    while not heap.isEmpty():
+        heap.extractMin()
 
 
 # ============================================================
-# Main benchmark
+# Benchmark runner
 # ============================================================
 
 def runBenchmarks() -> dict:
-    """Benchmark all shared operations."""
+    """Run all benchmarks and return the measured results."""
 
     results = {
         "insert": {
@@ -178,15 +339,18 @@ def runBenchmarks() -> dict:
 
     print()
     print("=" * 70)
-    print("FIBONACCI HEAP vs PYTHON BINARY HEAP")
+    print("FIBONACCI HEAP vs BINARY HEAP")
     print("=" * 70)
+    print(
+        "Both implementations are written in Python."
+    )
     print(
         f"Trials per measurement: {NUMBER_OF_TRIALS}"
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # INSERT
-    # --------------------------------------------------------
+    # ========================================================
 
     print()
     print("INSERT")
@@ -195,25 +359,29 @@ def runBenchmarks() -> dict:
     for inputSize in INPUT_SIZES:
 
         fibonacciTime = measureRuntime(
-            lambda: fibonacciInsert(
+            lambda: benchmarkFibonacciInsert(
                 inputSize
             )
         )
 
         binaryTime = measureRuntime(
-            lambda: binaryInsert(
+            lambda: benchmarkBinaryInsert(
                 inputSize
             )
         )
 
-        results["insert"]["fibonacciHeap"].append(
+        results["insert"][
+            "fibonacciHeap"
+        ].append(
             (
                 inputSize,
                 fibonacciTime,
             )
         )
 
-        results["insert"]["binaryHeap"].append(
+        results["insert"][
+            "binaryHeap"
+        ].append(
             (
                 inputSize,
                 binaryTime,
@@ -226,9 +394,9 @@ def runBenchmarks() -> dict:
             f"Binary={binaryTime:.8f}s"
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # FIND-MIN
-    # --------------------------------------------------------
+    # ========================================================
 
     print()
     print("FIND-MIN")
@@ -237,25 +405,29 @@ def runBenchmarks() -> dict:
     for inputSize in INPUT_SIZES:
 
         fibonacciTime = measureRuntime(
-            lambda: fibonacciFindMin(
+            lambda: benchmarkFibonacciFindMin(
                 inputSize
             )
         )
 
         binaryTime = measureRuntime(
-            lambda: binaryFindMin(
+            lambda: benchmarkBinaryFindMin(
                 inputSize
             )
         )
 
-        results["findMin"]["fibonacciHeap"].append(
+        results["findMin"][
+            "fibonacciHeap"
+        ].append(
             (
                 inputSize,
                 fibonacciTime,
             )
         )
 
-        results["findMin"]["binaryHeap"].append(
+        results["findMin"][
+            "binaryHeap"
+        ].append(
             (
                 inputSize,
                 binaryTime,
@@ -268,9 +440,9 @@ def runBenchmarks() -> dict:
             f"Binary={binaryTime:.8f}s"
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # EXTRACT-MIN
-    # --------------------------------------------------------
+    # ========================================================
 
     print()
     print("EXTRACT-MIN")
@@ -279,25 +451,29 @@ def runBenchmarks() -> dict:
     for inputSize in INPUT_SIZES:
 
         fibonacciTime = measureRuntime(
-            lambda: fibonacciExtractMin(
+            lambda: benchmarkFibonacciExtractMin(
                 inputSize
             )
         )
 
         binaryTime = measureRuntime(
-            lambda: binaryExtractMin(
+            lambda: benchmarkBinaryExtractMin(
                 inputSize
             )
         )
 
-        results["extractMin"]["fibonacciHeap"].append(
+        results["extractMin"][
+            "fibonacciHeap"
+        ].append(
             (
                 inputSize,
                 fibonacciTime,
             )
         )
 
-        results["extractMin"]["binaryHeap"].append(
+        results["extractMin"][
+            "binaryHeap"
+        ].append(
             (
                 inputSize,
                 binaryTime,

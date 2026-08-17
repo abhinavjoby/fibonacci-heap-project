@@ -1,4 +1,17 @@
+"""Generate nine Fibonacci Heap vs Binary Heap plots.
 
+For each operation:
+
+    1. Fibonacci Heap only
+    2. Binary Heap only
+    3. Both implementations together
+
+Operations:
+
+    Insert
+    Find-Min
+    Extract-Min
+"""
 
 from __future__ import annotations
 
@@ -8,24 +21,27 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 
-# ------------------------------------------------------------
+# ============================================================
 # Project root
-# ------------------------------------------------------------
+# ============================================================
 
 PROJECT_ROOT = Path(
     __file__
 ).resolve().parents[1]
 
 if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+    sys.path.insert(
+        0,
+        str(PROJECT_ROOT),
+    )
 
 
 from plots.comparisonBenchmark import runBenchmarks
 
 
-# ------------------------------------------------------------
+# ============================================================
 # Output directory
-# ------------------------------------------------------------
+# ============================================================
 
 OUTPUT_FOLDER = (
     PROJECT_ROOT
@@ -35,13 +51,13 @@ OUTPUT_FOLDER = (
 
 
 # ============================================================
-# Helpers
+# Helper functions
 # ============================================================
 
 def getInputSizes(
     values: list[tuple[int, float]],
 ) -> list[int]:
-    """Return input sizes."""
+    """Extract input sizes from benchmark results."""
     return [
         item[0]
         for item in values
@@ -51,7 +67,7 @@ def getInputSizes(
 def getRuntimes(
     values: list[tuple[int, float]],
 ) -> list[float]:
-    """Return runtime values."""
+    """Extract runtime values."""
     return [
         item[1]
         for item in values
@@ -65,7 +81,7 @@ def saveSinglePlot(
     filename: str,
     label: str,
 ) -> None:
-    """Create a plot for one heap."""
+    """Create and save a plot for one implementation."""
 
     plt.figure(
         figsize=(8, 5)
@@ -121,7 +137,7 @@ def saveComparisonPlot(
     title: str,
     filename: str,
 ) -> None:
-    """Create a plot containing both heap implementations."""
+    """Create and save a comparison plot."""
 
     plt.figure(
         figsize=(8, 5)
@@ -138,7 +154,7 @@ def saveComparisonPlot(
         inputSizes,
         binaryRuntimes,
         marker="o",
-        label="Binary Heap (heapq)",
+        label="Binary Heap",
     )
 
     plt.xlabel(
@@ -178,11 +194,11 @@ def saveComparisonPlot(
 
 
 # ============================================================
-# Main
+# Plot generation
 # ============================================================
 
 def generatePlots() -> None:
-    """Run the benchmarks and create all nine plots."""
+    """Run benchmarks and generate all nine plots."""
 
     OUTPUT_FOLDER.mkdir(
         parents=True,
@@ -196,11 +212,15 @@ def generatePlots() -> None:
     # ========================================================
 
     fibonacciInsert = (
-        results["insert"]["fibonacciHeap"]
+        results["insert"][
+            "fibonacciHeap"
+        ]
     )
 
     binaryInsert = (
-        results["insert"]["binaryHeap"]
+        results["insert"][
+            "binaryHeap"
+        ]
     )
 
     inputSizes = getInputSizes(
@@ -244,11 +264,15 @@ def generatePlots() -> None:
     # ========================================================
 
     fibonacciFindMin = (
-        results["findMin"]["fibonacciHeap"]
+        results["findMin"][
+            "fibonacciHeap"
+        ]
     )
 
     binaryFindMin = (
-        results["findMin"]["binaryHeap"]
+        results["findMin"][
+            "binaryHeap"
+        ]
     )
 
     inputSizes = getInputSizes(
@@ -292,11 +316,15 @@ def generatePlots() -> None:
     # ========================================================
 
     fibonacciExtractMin = (
-        results["extractMin"]["fibonacciHeap"]
+        results["extractMin"][
+            "fibonacciHeap"
+        ]
     )
 
     binaryExtractMin = (
-        results["extractMin"]["binaryHeap"]
+        results["extractMin"][
+            "binaryHeap"
+        ]
     )
 
     inputSizes = getInputSizes(
@@ -339,8 +367,9 @@ def generatePlots() -> None:
     print("=" * 70)
     print("ALL 9 PLOTS GENERATED")
     print("=" * 70)
+
     print(
-        f"Location: {OUTPUT_FOLDER}"
+        f"Saved to: {OUTPUT_FOLDER}"
     )
 
 
